@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TikTok Downloader</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        border: "hsl(var(--border))",
+                        input: "hsl(var(--input))",
+                        ring: "hsl(var(--ring))",
+                        background: "hsl(var(--background))",
+                        foreground: "hsl(var(--foreground))",
+                        primary: {
+                            DEFAULT: "hsl(var(--primary))",
+                            foreground: "hsl(var(--primary-foreground))",
+                        },
+                        secondary: {
+                            DEFAULT: "hsl(var(--secondary))",
+                            foreground: "hsl(var(--secondary-foreground))",
+                        },
+                        destructive: {
+                            DEFAULT: "hsl(var(--destructive))",
+                            foreground: "hsl(var(--destructive-foreground))",
+                        },
+                        muted: {
+                            DEFAULT: "hsl(var(--muted))",
+                            foreground: "hsl(var(--muted-foreground))",
+                        },
+                        accent: {
+                            DEFAULT: "hsl(var(--accent))",
+                            foreground: "hsl(var(--accent-foreground))",
+                        },
+                        popover: {
+                            DEFAULT: "hsl(var(--popover))",
+                            foreground: "hsl(var(--popover-foreground))",
+                        },
+                        card: {
+                            DEFAULT: "hsl(var(--card))",
+                            foreground: "hsl(var(--card-foreground))",
+                        },
+                    },
+                    borderRadius: {
+                        lg: "var(--radius)",
+                        md: "calc(var(--radius) - 2px)",
+                        sm: "calc(var(--radius) - 4px)",
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 222.2 84% 4.9%;
+            --primary: 221.2 83.2% 53.3%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 47.4% 11.2%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 47.4% 11.2%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 221.2 83.2% 53.3%;
+            --radius: 0.5rem;
+        }
+        .dark {
+            --background: 222.2 84% 4.9%;
+            --foreground: 210 40% 98%;
+            --card: 222.2 84% 4.9%;
+            --card-foreground: 210 40% 98%;
+            --popover: 222.2 84% 4.9%;
+            --popover-foreground: 210 40% 98%;
+            --primary: 217.2 91.2% 59.8%;
+            --primary-foreground: 222.2 47.4% 11.2%;
+            --secondary: 217.2 32.6% 17.5%;
+            --secondary-foreground: 210 40% 98%;
+            --muted: 217.2 32.6% 17.5%;
+            --muted-foreground: 215 20.2% 65.1%;
+            --accent: 217.2 32.6% 17.5%;
+            --accent-foreground: 210 40% 98%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 217.2 32.6% 17.5%;
+            --input: 217.2 32.6% 17.5%;
+            --ring: 224.3 76.3% 48%;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-background text-foreground flex flex-col">
+    <header class="sticky top-0 z-50 w-full backdrop-blur-sm bg-background/75 shadow-sm border-b border-border">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">TikTok Downloader</h1>
+            <div class="flex items-center space-x-4">
+                <button id="helpButton" class="p-2 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors">
+                    <i data-lucide="help-circle" class="w-5 h-5"></i>
+                </button>
+                <button id="themeToggle" class="p-2 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors">
+                    <i data-lucide="sun" class="hidden dark:block w-5 h-5"></i>
+                    <i data-lucide="moon" class="block dark:hidden w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-8 max-w-3xl">
+        <form id="downloadForm" class="space-y-4">
+            <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                <input id="tiktokUrl" class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 flex-1" type="text" placeholder="Paste TikTok URL here" aria-label="TikTok URL">
+                <button type="submit" class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full sm:w-auto">
+                    <i data-lucide="download" class="w-4 h-4 mr-2"></i>
+                    Download
+                </button>
+            </div>
+        </form>
+        <div id="result" class="mt-8 space-y-6"></div>
+    </main>
+
+    <footer class="mt-auto py-6 bg-muted">
+        <div class="container mx-auto px-4 text-center text-sm text-muted-foreground">
+            <p>&copy; 2023 TikTok Downloader. Use responsibly and respect copyright laws.</p>
+        </div>
+    </footer>
+
+    <div id="helpModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-background p-6 rounded-lg shadow-xl max-w-md w-full">
+            <h2 class="text-2xl font-bold mb-4">How to Use</h2>
+            <ol class="list-decimal list-inside space-y-2 mb-4">
+                <li>Copy the URL of the TikTok video or image you want to download.</li>
+                <li>Paste the URL into the input field on this page.</li>
+                <li>Click the "Download" button.</li>
+                <li>Wait for the content to load, then click the download button for the video or images.</li>
+            </ol>
+            <p class="text-sm text-muted-foreground mb-4">Please respect copyright laws and the rights of content creators when using this tool.</p>
+            <button id="closeHelpModal" class="w-full inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-secondary text-secondary-foreground hover:bg-secondary/80 h-10 px-4 py-2">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const helpButton = document.getElementById('helpButton');
+        const helpModal = document.getElementById('helpModal');
+        const closeHelpModal = document.getElementById('closeHelpModal');
+
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+        });
+
+        helpButton.addEventListener('click', () => {
+            helpModal.classList.remove('hidden');
+        });
+
+        closeHelpModal.addEventListener('click', () => {
+            helpModal.classList.add('hidden');
+        });
+
+        helpModal.addEventListener('click', (e) => {
+            if (e.target === helpModal) {
+                helpModal.classList.add('hidden');
+            }
+        });
+
+        function createSkeleton() {
+            return `
+                <div class="animate-pulse space-y-4">
+                    <div class="h-12 bg-muted rounded"></div>
+                    <div class="h-64 bg-muted rounded"></div>
+                    <div class="h-8 bg-muted rounded w-3/4"></div>
+                    <div class="h-8 bg-muted rounded"></div>
+                </div>
+            `;
+        }
+
+        document.getElementById('downloadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const url = document.getElementById('tiktokUrl').value;
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = createSkeleton();
+
+            try {
+                const response = await axios.get(`/api/download?url=${encodeURIComponent(url)}`);
+                const data = response.data;
+
+                if (data.status === 'success') {
+                    let content = '';
+                    if (data.result.type === 'video') {
+                        content = `
+                            <div class="bg-card text-card-foreground rounded-lg shadow-lg overflow-hidden">
+                                <div class="p-6">
+                                    <div class="flex items-center mb-4">
+                                        <img src="${data.result.author.avatar}" alt="${data.result.author.nickname}" class="w-12 h-12 rounded-full mr-4">
+                                        <div>
+                                            <p class="font-semibold text-lg">${data.result.author.nickname}</p>
+                                            <p class="text-sm text-muted-foreground">${data.result.desc}</p>
+                                        </div>
+                                    </div>
+                                    <video src="${data.result.video}" controls class="w-full rounded-md mb-4"></video>
+                                    <div class="flex justify-between text-sm text-muted-foreground mb-4">
+                                        <span class="flex items-center"><i data-lucide="heart" class="w-4 h-4 mr-1 text-destructive"></i>${data.result.statistics.likeCount}</span>
+                                        <span class="flex items-center"><i data-lucide="message-circle" class="w-4 h-4 mr-1 text-primary"></i>${data.result.statistics.commentCount}</span>
+                                        <span class="flex items-center"><i data-lucide="share" class="w-4 h-4 mr-1 text-accent"></i>${data.result.statistics.shareCount}</span>
+                                    </div>
+                                    <a href="${data.result.video}" download class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full">
+                                        <i data-lucide="download" class="w-4 h-4 mr-2"></i>
+                                        Download Video
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+                    } else if (data.result.type === 'image') {
+                        const images = data.result.images.map((img, index) => `
+                            <div class="mb-4">
+                                <img src="${img}" alt="TikTok Image ${index + 1}" class="w-full rounded-md mb-2">
+                                <a href="${img}" download="tiktok_image_${index + 1}.jpg" class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-secondary text-secondary-foreground hover:bg-secondary/80 h-9 px-3 w-full">
+                                    <i data-lucide="download" class="w-4 h-4 mr-2"></i>
+                                    Download Image ${index + 1}
+                                </a>
+                            </div>
+                        `).join('');
+                        content = `
+                            <div class="bg-card text-card-foreground rounded-lg shadow-lg overflow-hidden">
+                                <div class="p-6">
+                                    <div class="flex items-center mb-4">
+                                        <img src="${data.result.author.avatar}" alt="${data.result.author.nickname}" class="w-12 h-12 rounded-full mr-4">
+                                        <div>
+                                            <p class="font-semibold text-lg">${data.result.author.nickname}</p>
+                                            <p class="text-sm text-muted-foreground">${data.result.desc}</p>
+                                        </div>
+                                    </div>
+                                    ${images}
+                                    <div class="flex justify-between text-sm text-muted-foreground mt-4">
+                                        <span class="flex items-center"><i data-lucide="heart" class="w-4 h-4 mr-1 text-destructive"></i>${data.result.statistics.likeCount}</span>
+                                        <span class="flex items-center"><i data-lucide="message-circle" class="w-4 h-4 mr-1 text-primary"></i>${data.result.statistics.commentCount}</span>
+                                        <span class="flex items-center"><i data-lucide="share" class="w-4 h-4 mr-1 text-accent"></i>${data.result.statistics.shareCount}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    resultDiv.innerHTML = content;
+                    lucide.createIcons();
+                } else {
+                    resultDiv.innerHTML = '<p class="text-center text-destructive">Failed to fetch TikTok data. Please try again.</p>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = '<p class="text-center text-destructive">An error occurred. Please try again later.</p>';
+            }
+        });
+
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+  </html>
